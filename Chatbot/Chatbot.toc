@@ -1,0 +1,15 @@
+## Interface: 90200
+## Version: 0.0.01
+## Title: |cff00cc00Chat Bot|r 9000
+## Author: Justin O'Dell <codeanxiety@gmail.com>
+## Notes: Does your socializing for you!
+## SavedVariables: ChatbotDB
+## OptionalDeps: Ace3
+## X-Embeds: Ace3
+
+Embeds.xml
+Locales.xml
+
+Core.lua
+
+Modules.xml
