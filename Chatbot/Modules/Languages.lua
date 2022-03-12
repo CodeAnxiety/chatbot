@@ -1,10 +1,9 @@
-local _, Addon = ...
-
-local L = LibStub("AceLocale-3.0"):GetLocale(Addon.namespace)
+local AddonName, Addon = ...
+local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
 
 local Module = Addon:NewModule("Languages", "AceConsole-3.0")
 Module.name = L["Languages"]
-Module.namespace = "Languages"
+Module.description = L["The Languages module contains functionality to help you switch in-game languages easily."]
 
 local LANGUAGES = {
     ["Default"] = "inv_misc_questionmark",
@@ -23,76 +22,86 @@ local LANGUAGES = {
     ["Vulpera"] = "achievement_alliedrace_vulpera",
 }
 
+local function ShallowCopy(tab)
+    local result = {}
+    for key, value in pairs(tab) do
+        result[key] = value
+    end
+    return result
+end
+
 local DEFAULTS = {
     global = {
-        languages = {
-            usage_macro = true,
-        },
+        usage_macro = true,
+        icons = ShallowCopy(LANGUAGES),
+    },
+    profile = {
+        icons = {},
+    },
+    char = {
+        icons = {},
+    },
+}
+
+local OPTIONS = {
+    use_macro = {
+        type = "toggle",
+        name = L["Language Macro"],
+        order = 1,
+        desc = L["Determines whether the 'Cycle Language' macro should be created/updated when changing languages."],
+        set = function(info, value)
+            Module.db.global.use_macro = value
+        end,
+        get = function(info)
+            return Module.db.global.use_macro
+        end,
     }
 }
 
-local OPTIONS, COMMANDS
+local COMMANDS = {
+    ["cycle_language"] = "CycleLanguage",
+    ["set_language"] = "SetLanguage",
+}
+
+local function GetLanguageIcon(name)
+    return Module.db.char.icons[name]
+        or Module.db.profile.icons[name]
+        or Module.db.global.icons[name]
+        or LANGUAGES[name]
+        or LANGUAGES.Default
+end
 
 local function UpsertMacro(name, icon, body, perCharacter)
     local index = GetMacroIndexByName(name)
     local id
     if index ~= nil and index ~= 0 then
-        id = EditMacro(index, name, icon, body, 1, perCharacter and 1 or nil)
+        id = EditMacro(index, name, icon, body)
     else
-        id = CreateMacro(name, icon, body, perCharacter and 1 or nil)
+        id = CreateMacro(name, icon, body, perCharacter)
     end
     if id == nil then
-        Addon:Debug(format(L["Could not upsert macro: %s"], name))
+        Addon:Debugf(L["Could not upsert macro: %s"], name)
     end
-end
-
-function Module:Info()
-    return L["LANGUAGES_MODULE_INFO"]
 end
 
 function Module:Options()
-    if OPTIONS == nil then
-        OPTIONS = {
-            use_macro = {
-                type = "toggle",
-                name = L["Language Macro"],
-                order = 1,
-                desc = L["Determines whether the 'Cycle Language' macro should be created/updated when changing languages."],
-                set = function(info, value)
-                    self.db.global.languages.use_macro = value
-                end,
-                get = function(info)
-                    return self.db.global.languages.use_macro
-                end,
-            }
-        }
-    end
     return OPTIONS
 end
 
 function Module:Commands()
-    if COMMANDS == nil then
-        COMMANDS = {
-            ["cycle_language"] = "CycleLanguage",
-            ["set_language"] = "SetLanguage",
-        }
-    end
     return COMMANDS
 end
 
 function Module:OnInitialize()
-    self.db = self.db or Addon.db:RegisterNamespace(Module.namespace, DEFAULTS)
+    self.db = self.db or Addon.db:RegisterNamespace("Languages", DEFAULTS)
 end
-
 
 function Module:OnEnable()
     self:SetCurrentLanguageIndex(self:GetCurrentLanguageIndex(), true)
-
-    Addon:Debug(self.name, "module is enabled.")
 end
 
 function Module:OnDisable()
-    Addon:Debug(self.name, "module is disabled.")
+    self:SetCurrentLanguageIndex(1)
 end
 
 function Module:GetCurrentLanguageIndex()
@@ -105,6 +114,15 @@ function Module:GetCurrentLanguageIndex()
     return 1
 end
 
+function Module:GetLanguageIndex(name)
+    for index = 1, GetNumLanguages(), 1 do
+        local language, id = GetLanguageByIndex(index)
+        if language == name then
+            return index
+        end
+    end
+end
+
 function Module:SetCurrentLanguageIndex(index, silent)
     local name, id = GetLanguageByIndex(index)
     if name == nil then
@@ -114,27 +132,27 @@ function Module:SetCurrentLanguageIndex(index, silent)
 
     DEFAULT_CHAT_FRAME.editBox.languageID = id
 
-    if self.db.global.languages.use_macro then
-        local icon = LANGUAGES[name] or LANGUAGES["Default"]
+    if self.db.global.use_macro then
+        local icon = GetLanguageIcon(name)
         UpsertMacro(L["Cycle Language"], icon, "/cycle_language")
     end
 
     if silent ~= true then
-        Addon:Print(format(L["Now speaking |cff88ff44%s|r."], name))
+        Addon:Printf(L["Now speaking %s."], name)
     end
 end
 
 function Module:CycleLanguage(input)
     if input == "-?" or input == "-h" or input == "-help" then
-        Addon:Print(L["Usage:"], L["CYCLE_LANGUAGE_USAGE"])
+        Addon:Print(L["Usage:"], L["Languages__cycle_language"])
         return
     end
     self:SetCurrentLanguageIndex(self:GetCurrentLanguageIndex() + 1)
 end
 
 function Module:SetLanguage(input)
-    if not input or input == "" or input == "-?" or input == "-h" or input == "-help" then
-        Addon:Print(L["Usage:"], L["SET_LANGUAGE_USAGE"])
+    if not input or input == "-?" or input == "-h" or input == "-help" then
+        Addon:Print(L["Usage:"], L["Languages__set_language"])
         return
     end
     local match = string.lower(input)
@@ -145,5 +163,5 @@ function Module:SetLanguage(input)
             return
         end
     end
-    Addon:Print(format(L["You don't know how to speak |cff88ff44%s|r."], input))
+    Addon:Printf(L["You don't know how to speak %s."], input)
 end

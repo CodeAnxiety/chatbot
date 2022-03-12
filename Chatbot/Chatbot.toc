@@ -1,5 +1,5 @@
 ## Interface: 90200
-## Version: 0.0.01
+## Version: 0.0.1
 ## Title: |cff00cc00Chat Bot|r 9000
 ## Author: Justin O'Dell <codeanxiety@gmail.com>
 ## Notes: Does your socializing for you!
@@ -11,5 +11,8 @@ Embeds.xml
 Locales.xml
 
 Core.lua
+Modules.lua
+Options.lua
+Commands.lua
 
 Modules.xml
