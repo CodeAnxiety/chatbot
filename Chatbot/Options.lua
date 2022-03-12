@@ -8,9 +8,8 @@ local AceDBOptions = LibStub("AceDBOptions-3.0")
 
 local DEFAULTS = {
     global = {
-        debug_mode = false,
-        test_mode = true,
         allow_aliases = true,
+        debug_mode = false,
     },
     profile = {
         modules = {
@@ -31,18 +30,12 @@ local OPTIONS = {
             order = 1,
             desc = L["Determines whether or not command aliases are enabled."],
             set = function(info, value)
-                Addon.db.global.allow_aliases = value
+                Addon.db.global.allow_aliases = value and true
                 Addon:SetupCommands()
             end,
-            get = function(info) return Addon.db.global.allow_aliases end
-        },
-        test_mode = {
-            type = "toggle",
-            name = L["Test Mode"],
-            order = 2,
-            desc = L["Determines whether or not to chat message should actually be sent."],
-            set = function(info, value) Addon.db.global.test_mode = value end,
-            get = function(info) return Addon.db.global.test_mode end
+            get = function(info) return
+                Addon.db.global.allow_aliases and true
+            end
         },
         debug_mode = {
             type = "toggle",
@@ -76,8 +69,10 @@ local function BuildModulesOptions(order)
     }
     order = order + 1
 
+
     local toggle_order = 1
     local module_order = 1
+
     for name, module in Addon:IterateModules() do
         -- add option to toggle the module
         options.args[name.."_toggle"] = {
@@ -95,7 +90,6 @@ local function BuildModulesOptions(order)
         }
         toggle_order = toggle_order + 1
 
-        local include_module = false
         local module_options = {
             type = "group",
             name = module.name,
@@ -113,71 +107,16 @@ local function BuildModulesOptions(order)
             },
         }
 
-        local option_order = 2
-
-        -- create section for the module's commands
+        local include_module = false
         if module["Commands"] then
-            local commands = {}
-            for command in pairs(module:Commands()) do
-                table.insert(commands, command)
-            end
-            table.sort(commands)
-
-            local help = ""
-            for i = 1, #commands, 1 do
-                if help ~= "" then help = help .. "\n\n" end
-                help = help .. L[name.."__"..commands[i]]
-            end
-
-            module_options.args.commands_header = {
-                type = "header",
-                name = L["Available Commands"],
-                order = option_order,
-            }
-            option_order = option_order + 1
-
-            module_options.args.commands = {
-                type = "description",
-                name = help,
-                order = option_order,
-            }
-            option_order = option_order + 1
-
             include_module = true
         end
-
-        -- create section for the module's aliases
-        if Addon.db.global.allow_aliases and module["Aliases"] then
-            local aliases = {}
-            for command in pairs(module:Aliases()) do
-                table.insert(aliases, command)
-            end
-            table.sort(aliases)
-
-            local help = ""
-            for i = 1, #aliases, 1 do
-                if help ~= "" then help = help .. "\n\n" end
-                help = help .. L[name.."__"..aliases[i]]
-            end
-
-            module_options.args.aliases_header = {
-                type = "header",
-                name = L["Available Aliases"],
-                order = option_order,
-            }
-            option_order = option_order + 1
-
-            module_options.args.aliases = {
-                type = "description",
-                name = help,
-                order = option_order,
-            }
-            option_order = option_order + 1
-
+        if module["Aliases"] then
             include_module = true
         end
 
         -- populate with any module specific options
+        local option_order = 2
         if module["Options"] then
             module_options.args.options_header = {
                 type = "header",
@@ -210,10 +149,164 @@ local function BuildModulesOptions(order)
     return options, order
 end
 
+local COMMANDS_START = 10000
+local COMMANDS_END = 19999
+local ALIASES_START = 20000
+local ALIASES_END = 29999
+
+local function HasCommandsVisible(args)
+    for _, options in pairs(args) do
+        if options.order > COMMANDS_START and options.order < COMMANDS_END then
+            if not options.hidden() then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function HasAliasesVisible(args)
+    for _, options in pairs(args) do
+        if options.order > ALIASES_START and options.order < ALIASES_END then
+            if not options.hidden() then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function BuildCommands(order)
+    local options = {
+        type = "group",
+        name = L["Commands"],
+        args = {},
+        order = order,
+    }
+    order = order + 1
+
+    local commands = {}
+    local command_names = {}
+
+    local aliases = {}
+    local alias_names = {}
+
+    for module_name, module in Addon:IterateModules() do
+        if module["Commands"] then
+            for command_name in pairs(module:Commands()) do
+                table.insert(command_names, command_name)
+                commands[command_name] = {
+                    type = "description",
+                    name = L[module_name.."__"..command_name],
+                    hidden = function ()
+                        return not Addon:GetModuleEnabled(module_name)
+                    end
+                }
+            end
+        end
+        if module["Aliases"] then
+            for alias_name in pairs(module:Aliases()) do
+                table.insert(alias_names, alias_name)
+                aliases[alias_name] = {
+                    type = "description",
+                    name = L[module_name.."__"..alias_name],
+                    hidden = function ()
+                        return not (Addon.db.global.allow_aliases and Addon:GetModuleEnabled(module_name))
+                    end
+                }
+            end
+        end
+    end
+
+    if commands then
+        options.args.commands_header = {
+            type = "header",
+            name = L["Commands"],
+            order = COMMANDS_START,
+            hidden = function ()
+                return not HasCommandsVisible(options.args)
+            end
+        }
+        options.args.commands_separator = {
+            type = "description",
+            name = "\n",
+            order = COMMANDS_END,
+            hidden = function ()
+                return not HasCommandsVisible(options.args)
+            end
+        }
+
+        table.sort(command_names)
+
+        local local_order = COMMANDS_START + 1
+        for _, command_name in pairs(command_names) do
+            commands[command_name].order = local_order
+            local_order = local_order + 1
+            options.args[command_name] = commands[command_name]
+        end
+    end
+
+    if aliases then
+        options.args.aliases_header = {
+            type = "header",
+            name = L["Aliases"],
+            order = ALIASES_START,
+            hidden = function ()
+                return not (Addon.db.global.allow_aliases and HasAliasesVisible(options.args))
+            end
+        }
+        options.args.aliases_separator = {
+            type = "description",
+            name = "\n",
+            order = ALIASES_END,
+            hidden = function ()
+                return not HasCommandsVisible(options.args)
+            end
+        }
+
+        table.sort(alias_names)
+
+        local local_order = ALIASES_START + 1
+        for _, alias_name in pairs(alias_names) do
+            aliases[alias_name].order = local_order
+            local_order = local_order + 1
+            options.args[alias_name] = aliases[alias_name]
+        end
+    end
+
+    options.hidden = function ()
+        return not (HasCommandsVisible(options.args) or HasAliasesVisible(options.args))
+    end
+
+    return options, order
+end
+
+local function PopulateModuleCommands()
+    for module_name, module in Addon:IterateModules() do
+        if module["Commands"] then
+            OPTIONS.args.modules.args[module_name].args.commands_header = OPTIONS.args.commands.args.commands_header
+            OPTIONS.args.modules.args[module_name].args.commands_separator = OPTIONS.args.commands.args.commands_separator
+            for command_name in pairs(module:Commands()) do
+                OPTIONS.args.modules.args[module_name].args[command_name] = OPTIONS.args.commands.args[command_name]
+            end
+        end
+        if module["Aliases"] then
+            OPTIONS.args.modules.args[module_name].args.aliases_header = OPTIONS.args.commands.args.aliases_header
+            OPTIONS.args.modules.args[module_name].args.aliases_separator = OPTIONS.args.commands.args.aliases_separator
+            for alias_name in pairs(module:Aliases()) do
+                OPTIONS.args.modules.args[module_name].args[alias_name] = OPTIONS.args.commands.args[alias_name]
+            end
+        end
+    end
+end
+
 local function BuildOptionsTable()
     local order = 1
     OPTIONS.args.profiles, order = BuildProfileOptions(order)
     OPTIONS.args.modules, order = BuildModulesOptions(order)
+    OPTIONS.args.commands, order = BuildCommands(order)
+    PopulateModuleCommands()
+    return order
 end
 
 function Addon:SetupOptions(register)
@@ -223,8 +316,10 @@ function Addon:SetupOptions(register)
         self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
         self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
 
-        AceConfig:RegisterOptionsTable(AddonName, OPTIONS, {AddonName})
+        AceConfig:RegisterOptionsTable(AddonName, OPTIONS)
         self.dbFrame = AceConfigDialog:AddToBlizOptions(AddonName, self.name);
+
+        self:RegisterChatCommand("chatbot", "ShowOptions")
     end
 
     BuildOptionsTable()

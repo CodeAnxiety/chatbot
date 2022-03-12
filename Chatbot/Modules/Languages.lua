@@ -62,6 +62,9 @@ local COMMANDS = {
     ["cycle_language"] = "CycleLanguage",
     ["set_language"] = "SetLanguage",
 }
+local ALIASES = {
+    ["sl"] = "SetLanguage",
+}
 
 local function GetLanguageIcon(name)
     return Module.db.char.icons[name]
@@ -90,6 +93,10 @@ end
 
 function Module:Commands()
     return COMMANDS
+end
+
+function Module:Aliases()
+    return ALIASES
 end
 
 function Module:OnInitialize()

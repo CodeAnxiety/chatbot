@@ -24,7 +24,7 @@ function Addon:SetupModuleCommands(name, module, enabled)
             if enabled then
                 module:RegisterChatCommand(command_name, command_function)
             else
-                module:UnegisterChatCommand(command_name, command_function)
+                module:UnregisterChatCommand(command_name, command_function)
             end
         end
     end

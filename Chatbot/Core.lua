@@ -3,7 +3,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
 
 
 Addon = LibStub("AceAddon-3.0"):NewAddon(Addon, AddonName, "AceConsole-3.0")
-Addon.name = L["Addon"]
+Addon.name = L["Chatbot"]
 Addon.description = L["Does your socializing for you!"]
 Addon.version = GetAddOnMetadata(AddonName, "Version")
 Addon.gameVersion = GetBuildInfo()
@@ -72,7 +72,6 @@ end
 
 function Addon:OnEnable()
     self:EnableAllModules()
-    self:RegisterChatCommand("chatbot", "ShowOptions")
 end
 
 function Addon:OnDisable()

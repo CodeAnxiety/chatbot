@@ -43,7 +43,7 @@ local function StringSplit(input, separator)
     return results
 end
 
-local function GetSmartChatTarget()
+local function GetChatTarget()
 	if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
 		return "INSTANCE_CHAT"
 	elseif IsInRaid(LE_PARTY_CATEGORY_HOME) then
@@ -66,7 +66,8 @@ function Module:SendRandomChat(input)
     end
     local messages = StringSplit(input, ";")
     local message = GetRandomValue(messages)
-    SendChatMessage(message, GetSmartChatTarget())
+    local target = GetChatTarget()
+    SendChatMessage(message, target)
 end
 
 function Module:SendRandomEmote(input)
