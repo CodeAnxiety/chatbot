@@ -55,10 +55,9 @@ function Addon:EnableNamedModule(name, module)
         if (module == nil) then return end
     end
 
-    if module:IsEnabled() then return end
-    self:Debugf(L["Enabling module: %s"], name)
-
-    module:Enable()
+    if not module:IsEnabled() then
+        module:Enable()
+    end
 
     self:SetupModuleCommands(name, module, true)
 end
@@ -77,10 +76,9 @@ function Addon:DisableNamedModule(name, module)
         if (module == nil) then return end
     end
 
-    if not module:IsEnabled() then return end
-    self:Debugf(L["Disabling module: %s"], module.name)
-
-    module:Disable()
+    if module:IsEnabled() then
+        module:Disable()
+    end
 
     self:SetupModuleCommands(name, module, false)
 end

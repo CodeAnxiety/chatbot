@@ -68,7 +68,6 @@ end
 
 function Addon:OnInitialize()
     self:SetupOptions(true)
-    self:SetupCommands()
 end
 
 function Addon:OnEnable()
