@@ -1,54 +1,76 @@
 local AddonName, Addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
 
-function Addon:GetModuleEnabled(name)
-    assert(type(name) == "string")
+---
+--- Returns whether the named module is configured to be enabled.
+---
+--- @param name string The name of the module.
+--- @return boolean True if the module is configured to be enabled.
+---
+function Addon:ShouldModuleBeEnabled(name)
+    Addon.Assert(type(name) == "string", "name must be a string")
 
     return self.db.profile.modules[name] and true
 end
 
-function Addon:SetModuleEnabled(name, enabled)
-    assert(type(name) == "string")
+---
+--- Sets whether the named module is configured to be enabled.
+---
+--- @param name string The name of the module.
+--- @param enabled boolean True if the module should be configured to be enabled.
+---
+function Addon:SetShouldModuleBeEnabled(name, enabled)
+    Addon.Assert(type(name) == "string", "name must be a string")
 
     self.db.profile.modules[name] = enabled and true
     return self.db.profile.modules[name]
 end
 
-function Addon:GetModule(name)
-    assert(type(name) == "string")
-
-    for module_name, module in self:IterateModules() do
-        if module_name == name then
-            return module
-        end
-    end
-
-    self:Warningf(L["Could not find module: %s"], name)
-end
-
-function Addon:ToggleModule(name, enabled)
-    assert(type(name) == "string")
+---
+--- Enables or disables the named module.
+---
+--- @param name string The name of the module.
+--- @param enabled boolean|nil Whether the module should be enabled, or the module's configured enable state if nil.
+---
+function Addon:ToggleModule(name, module, enabled)
+    Addon.Tracef("Addon:ToggleModule(%s, %s)", name, enabled ~= nil and tostring(enabled) or "nil")
+    Addon.Assert(type(name) == "string", "name must be a string")
+    Addon.Assert(module == nil or type(module) == "table", "module must be a table or nil")
+    Addon.Assert(enabled == nil or type(enabled) == "boolean", "enabled must be a boolean or nil")
 
     if enabled == nil then
-        enabled = not self:GetModuleEnabled(name)
+        enabled = not self:ShouldModuleBeEnabled(name)
     end
+
     if enabled then
-        self:EnableNamedModule(name)
+        self:EnableNamedModule(name, module)
     else
-        self:DisableNamedModule(name)
+        self:DisableNamedModule(name, module)
     end
 end
 
+---
+--- Enables all modules if they are configured to be enabled.
+---
 function Addon:EnableAllModules()
+    Addon.Trace("Addon:EnableAllModules")
+
     for name, module in self:IterateModules() do
-        if self:GetModuleEnabled(name) then
+        if self:ShouldModuleBeEnabled(name) then
             self:EnableNamedModule(name, module)
         end
     end
 end
 
+---
+--- Enables the named module reguardless of its configured enabled state.
+---
+--- @param name string The name of the module.
+--- @param module table|nil The module object.
+---
 function Addon:EnableNamedModule(name, module)
-    assert(type(name) == "string")
+    Addon.Tracef("Addon:EnableNamedModule(%s)", name)
+    Addon.Assert(type(name) == "string", "name must be a string")
 
     if module == nil then
         module = self:GetModule(name)
@@ -62,14 +84,27 @@ function Addon:EnableNamedModule(name, module)
     self:SetupModuleCommands(name, module, true)
 end
 
+---
+--- Disables all modules reguardless of their configured enabled state.
+---
 function Addon:DisableAllModules()
+    Addon.Trace("Addon:DisableAllModules")
+
     for name, module in self:IterateModules() do
         self:DisableNamedModule(name, module)
     end
 end
 
+---
+--- Disabled the named module reguardless of its configured enabled state.
+---
+--- @param name string The name of the module.
+--- @param module table|nil The module object.
+---
 function Addon:DisableNamedModule(name, module)
-    assert(type(name) == "string")
+    Addon.Tracef("Addon:DisableNamedModule(%s)", name)
+    Addon.Assert(type(name) == "string", "name must be a string")
+    Addon.Assert(module == nil or type(module) == "table", "module must be a table or nil")
 
     if module == nil then
         module = self:GetModule(name)

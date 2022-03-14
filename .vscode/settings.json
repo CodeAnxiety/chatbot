@@ -1,4 +1,8 @@
 {
+    "editor.wordWrapColumn": 100,
+    "editor.rulers": [
+        100
+    ],
     "wowAPI.emmyLua.loadFrameXML": true,
     "Lua.runtime.version": "Lua 5.1",
     "Lua.completion.showParams": true,
@@ -9,6 +13,7 @@
     "Lua.diagnostics.globals": [
         "DEFAULT_CHAT_FRAME",
         "LE_PARTY_CATEGORY_INSTANCE",
-        "LE_PARTY_CATEGORY_HOME"
+        "LE_PARTY_CATEGORY_HOME",
+        "SELECTED_CHAT_FRAME"
     ],
 }

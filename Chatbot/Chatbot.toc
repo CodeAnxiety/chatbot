@@ -10,6 +10,7 @@
 Embeds.xml
 Locales.xml
 
+Utils.lua
 Core.lua
 Modules.lua
 Options.lua
