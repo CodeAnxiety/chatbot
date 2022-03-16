@@ -5,11 +5,11 @@ local Module = Addon:NewModule("Random", "AceConsole-3.0")
 Module.name = L["Random"]
 Module.description = L["The Random module includes commands that allow you to randomize your chat macros."]
 Module.commands = {
-    ["random_chat"] = "CmdRandomChat",
+    ["random_message"] = "CmdRandomMessage",
     ["random_emote"] = "CmdRandomEmote",
 }
 Module.aliases = {
-    ["rc"] = "random_chat",
+    ["rm"] = "random_message",
     ["re"] = "random_emote",
 }
 
@@ -26,13 +26,13 @@ local function GetChatTarget()
 end
 
 ---
---- Usage: /random_chat message[; ...]
+--- Usage: /random_message message[; ...]
 ---
-function Module:CmdRandomChat(input)
-    Addon.Tracef("Module[%s]:CmdRandomChat(%s)", self.name, input)
+function Module:CmdRandomMessage(input)
+    Addon.Tracef("Module[%s]:CmdRandomMessage(%s)", self.name, input)
 
     if input == "" or input == "-?" or input == "-h" or input == "-help" then
-        Addon:Print(L["Usage:"], L["Random__random_chat"])
+        Addon:Print(L["Usage:"], L["Random__random_message"])
         return
     end
 
@@ -40,7 +40,7 @@ function Module:CmdRandomChat(input)
     local message = Addon.Choose(messages)
     local target = GetChatTarget()
 
-    SendChatMessage(message, target)
+    SendChatMessage(message, target, DEFAULT_CHAT_FRAME.editBox.languageID)
 end
 
 ---

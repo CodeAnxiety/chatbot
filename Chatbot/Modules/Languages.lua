@@ -11,7 +11,7 @@ Module.commands = {
 }
 Module.aliases = {
     ["sl"] = "set_language",
-    ["rl"] = "reset_language",
+    ["rsl"] = "reset_language",
 }
 
 local k_languageIcons = {
@@ -77,7 +77,7 @@ local function GetCurrentLanguageIndex()
     return 1
 end
 
-local function SetCurrentLanguageIndex(index)
+local function SetCurrentLanguageIndex(index, silent)
     local name, id = GetLanguageByIndex(index)
     if name == nil then
         index = 1
@@ -95,7 +95,15 @@ local function SetCurrentLanguageIndex(index)
         Addon.UpsertMacro(L["Cycle Language"], icon, "/cycle_language")
     end
 
-    Addon:Printf(L["Now speaking %s."], name)
+    if not silent then
+        Addon:Printf(L["Now speaking %s."], name)
+    end
+end
+
+if not string["starts"] then
+    function string.starts(input, match)
+        return string.sub(input, 1, string.len(match)) == match
+    end
 end
 
 function Module:Options()
@@ -111,13 +119,13 @@ end
 function Module:OnEnable()
     Addon.Tracef("Module[%s]:OnEnable", self.name)
 
-    SetCurrentLanguageIndex(GetCurrentLanguageIndex())
+    SetCurrentLanguageIndex(GetCurrentLanguageIndex(), true)
 end
 
 function Module:OnDisable()
     Addon.Tracef("Module[%s]:OnDisable", self.name)
 
-    SetCurrentLanguageIndex(1)
+    SetCurrentLanguageIndex(1, true)
 end
 
 ---
@@ -131,7 +139,7 @@ function Module:CmdCycleLanguage(input)
         return
     end
 
-    SetCurrentLanguageIndex(GetCurrentLanguageIndex() + 1)
+    SetCurrentLanguageIndex(GetCurrentLanguageIndex() + 1, string.starts(input, "!"))
 end
 
 ---
@@ -145,16 +153,23 @@ function Module:CmdSetLanguage(input)
         return
     end
 
+    local silent = string.starts(input, "!")
+    if silent then
+        input = string.sub(input, 2)
+    end
+
     local match = string.lower(input)
     for index = 1, GetNumLanguages(), 1 do
         local name = GetLanguageByIndex(index)
-        if index == match or string.lower(name) == match then
-            SetCurrentLanguageIndex(index)
+        if string.lower(name) == match or tostring(index) == match then
+            SetCurrentLanguageIndex(index, silent)
             return
         end
     end
 
-    Addon:Printf(L["You don't know how to speak %s."], input)
+    if not silent then
+        Addon:Printf(L["You don't know how to speak %s."], input)
+    end
 end
 
 ---
@@ -168,6 +183,6 @@ function Module:CmdResetLanguage(input)
         return
     end
 
-    SetCurrentLanguageIndex(1)
+    SetCurrentLanguageIndex(1, string.starts(input, "!"))
 end
 
