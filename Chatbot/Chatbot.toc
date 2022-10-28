@@ -8,8 +8,11 @@
 ## X-Embeds: Ace3
 
 Embeds.xml
+
+Utils/Locale.lua
 Locales.xml
 
+Utils/Serializer.lua
 Utils.lua
 Core.lua
 Modules.lua

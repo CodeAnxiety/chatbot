@@ -29,10 +29,10 @@ end
 --- Usage: /random_message message[; ...]
 ---
 function Module:CmdRandomMessage(input)
-    Addon.Tracef("Module[%s]:CmdRandomMessage(%s)", self.name, input)
+    Addon.Trace("Module[%s]:CmdRandomMessage(%s)", self.name, input)
 
     if input == "" or input == "-?" or input == "-h" or input == "-help" then
-        Addon:Print(L["Usage:"], L["Random__random_message"])
+        Addon.Info("Usage: %s", "$Usage:random_message")
         return
     end
 
@@ -47,10 +47,10 @@ end
 --- Usage: /random_emote emote[; ...]
 ---
 function Module:CmdRandomEmote(input)
-    Addon.Tracef("Module[%s]:CmdRandomEmote(%s)", self.name, input)
+    Addon.Trace("Module[%s]:CmdRandomEmote(%s)", self.name, input)
 
     if input == "" or input == "-?" or input == "-h" or input == "-help" then
-        Addon:Print(L["Usage:"], L["Random__random_emote"])
+        Addon.Info("Usage: %s", "$Usage:random_emote")
         return
     end
 

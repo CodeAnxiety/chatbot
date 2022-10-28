@@ -1,7 +1,7 @@
 local AddonName, Addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
 
-local k_logLevels = {
+local kLogLevels = {
     Trace = 1,
     Debug = 2,
     Info = 3,
@@ -10,7 +10,7 @@ local k_logLevels = {
     Assert = 6,
     LAST = 7,
 }
-local k_LogNames = {
+local kLogNames = {
     "trace",
     "debug",
     "info",
@@ -18,166 +18,205 @@ local k_LogNames = {
     "error",
     "assert",
 }
-local s_logPreambles = {
-    "|cff606060Trace:|r ",
-    "|cff40c0c0Debug:|r ",
+local kLogDLPreamble = {
+    "OK~Trace: ",
+    "OK~Debug: ",
     "",
-    "|cffc0c040Warning:|r ",
-    "|cffc04040Error:|r ",
-    "|cffFF0000Assert Failure:|r ",
+    "WARN~",
+    "ERR~",
+    "ERR~Assert Failure: ",
+}
+
+local kLogPreambles = {
+    L["Log Trace: "],
+    L["Log Debug: "],
+    L["Log Info: "],
+    L["Log Warning: "],
+    L["Log Error: "],
+    L["Log Assert: "],
 }
 
 -- If you want to enable tracing or debugging at addon load, then you must set this here
-local s_logLevel = k_logLevels.Info
+local sLogLevel = kLogLevels.Debug
 
-local function Log(level, message)
-    if level >= s_logLevel then
-        message = s_logPreambles[level] .. message;
-        if level >= k_logLevels.Error then
-            error(message)
-        else
-            print(message)
-        end
+local function Localize(message)
+    repeat
+        local changed = false
+        message = string.gsub(message, "%$([A-Za-z_][A-Za-z0-9_]+(:[A-Za-z_][A-Za-z0-9_]+)*)", function(match)
+            local replacement = L[match]
+            if replacement ~= nil and replacement ~= match then
+                changed = changed or (replacement ~= match)
+                return replacement
+            else
+                return string.gsub(match, "^.+:(.+?)$", "%1")
+            end
+        end)
+    until not changed
+    return message
+end
+
+---
+--- Logs a message, formatted using additional arguments, if the level exceeds the current level.
+---
+--- @param level integer The log level.
+--- @param message string The message format.
+--- @param ... any The values to be formatted.
+---
+local function Log(level, message, ...)
+    if level < sLogLevel then
+        return
+    end
+
+    local localized = Localize(format(L[message] or message, ...))
+
+    if level == kLogLevels.Info then
+        Addon:Print(localized)
+    elseif _G.DLAPI then
+        _G.DLAPI.DebugLog(AddonName, kLogDLPreamble[level] .. localized)
+    elseif level >= kLogLevels.Error then
+        error(kLogPreambles[level] .. localized)
+    else
+        print(kLogPreambles[level] .. localized)
     end
 end
 
-local function Logf(level, message, ...)
-    if level >= s_logLevel then
-        Log(level, format(message, ...));
-    end
+function Addon.Trace(message, ...)
+    Log(kLogLevels.Trace, message, ...)
 end
 
-function Addon.Trace(message)
-    Log(k_logLevels.Trace, message)
+function Addon.Debug(message, ...)
+    Log(kLogLevels.Debug, message, ...)
 end
-function Addon.Tracef(message, ...)
-    Logf(k_logLevels.Trace, message, ...)
+
+function Addon.Info(message, ...)
+    Log(kLogLevels.Info, message, ...)
 end
-function Addon.Debug(message)
-    Log(k_logLevels.Debug, message)
+
+function Addon.Warning(message, ...)
+    Log(kLogLevels.Warning, message, ...)
 end
-function Addon.Debugf(message, ...)
-    Logf(k_logLevels.Debug, message, ...)
+
+function Addon.Error(message, ...)
+    Log(kLogLevels.Error, message, ...)
 end
-function Addon.Log(message)
-    Log(k_logLevels.Info, message)
-end
-function Addon.Logf(message, ...)
-    Logf(k_logLevels.Info, message, ...)
-end
-function Addon.Warning(message)
-    Log(k_logLevels.Warning, message)
-end
-function Addon.Warningf(message, ...)
-    Logf(k_logLevels.Warning, message, ...)
-end
-function Addon.Error(message)
-    Log(k_logLevels.Error, message)
-end
-function Addon.Errorf(message, ...)
-    Logf(k_logLevels.Error, message, ...)
-end
-function Addon.Assert(condition, message)
+
+function Addon.Assert(condition, message, ...)
     if not condition then
-        Log(k_logLevels.Assert, message)
-    end
-end
-function Addon.Assertf(condition, message, ...)
-    if not condition then
-        Logf(k_logLevels.Assert, message, ...)
+        Log(kLogLevels.Assert, message, ...)
     end
 end
 
 function Addon.GetLogLevel()
-    return s_logLevel, k_LogNames[s_logLevel]
+    return sLogLevel, kLogNames[sLogLevel]
 end
 
-function Addon.SetLogLevel(level)
-    local level_type = type(level)
-    Addon.Assert(level_type == "number" or level_type == "string", "level must be a number or string")
-
-    if level_type == "string" then
-        local found = false
-        level = level:lower()
-        for index, name in ipairs(k_LogNames) do
-            if name == level then
-                level = index
-                found = true
-                break
+---
+--- Attempts to parse the given input as a log level.
+---
+--- @param level any Input to parse
+--- @return integer level Log level
+---
+local function ParseLogLevel(level)
+    if type(level) == "string" then
+        local lowered = level:lower()
+        for index, name in ipairs(kLogNames) do
+            if name == lowered then
+                return index
             end
         end
-        Addon.Assertf(found, "invalid log level: %s", level)
+    elseif type(level) == "number" then
+        for index, _ in ipairs(kLogNames) do
+            if index == level then
+                return index
+            end
+        end
     end
-
-    Addon.Assertf(level >= 1 and level < k_logLevels.LAST, "invalid log level: %d", level)
-
-    s_logLevel = level
-    Log(level, "Log level updated.")
+    return nil
 end
 
-function Addon.Escape(text)
-    if type(text) == "string" then
-        text = text:gsub("\\", "\\\\")
-        text = text:gsub("\"", "\\\"")
-        text = text:gsub("\t", "\\t")
-        text = text:gsub("\r", "\\r")
-        text = text:gsub("\n", "\\n")
-        text = "\"" .. text .. "\""
+function Addon.SetLogLevel(value)
+    local level = ParseLogLevel(value)
+    if level == nil then
+        Addon.Error("Invalid log level: %s", level)
     end
-    return text
+
+    sLogLevel = level or kLogLevels.Info
+    Addon.Info("Log level updated: %s", "$LogLevel:" .. kLogNames[level])
+end
+
+function Addon.Quoted(text)
+    text = tostring(text or "")
+    text = text:gsub("\\", "\\\\")
+    text = text:gsub("\"", "\\\"")
+    text = text:gsub("\t", "\\t")
+    text = text:gsub("\r", "\\r")
+    text = text:gsub("\n", "\\n")
+    text = "\"" .. text .. "\""
+end
+
+function Addon.MakePattern(pattern, caseSensitive)
+    return string.gsub(pattern, ".", function(char)
+        if char == "*" then
+            return '.+'
+        elseif char == "?" then
+            return '.'
+        elseif char == "%" then
+            return "%%"
+        elseif not caseSensitive and string.match(char, "%a") then
+            return "[" .. char:upper() .. char:lower() .. "]"
+        else
+            return char
+        end
+    end)
 end
 
 function Addon.IsIdentifier(name)
-    return type(name) == "string" and name:gmatch("^[A-Za-z_][A-Za-z0-9_]*$")
+    return string.match(name, "^[A-Za-z_][A-Za-z0-9_]*$")
 end
 
-function Addon.Dump(name, value, maxDepth, depth)
-    name = name or "()"
-    maxDepth = maxDepth or 4
-    depth = depth or 0
-
-    if depth > maxDepth then return end
-
-    local text = string.rep("  ", depth)
-    if type(name) == "number" then
-        text = text .. "[" .. name .. "]"
-    elseif Addon.IsIdentifier(name) then
-        text = text .. name
-    else
-        text = text .. "[" .. Addon.Escape(name) .. "]"
+function Addon.AppendTable(target, ...)
+    for i = 1, select("#", ...) do
+        table.insert(target, select(i, ...))
     end
+end
 
-    local valueType = type(value)
-    if valueType == "table" then
-        Addon.Log(text .. " = {")
-        for k, v in pairs(value) do
-            Addon.Dump(k, v, maxDepth, depth + 1)
-        end
-        text = string.rep("  ", depth) .. "}"
-    elseif valueType == "boolean" then
-        text = text .. " = " .. tostring(value)
-    elseif valueType == "string" then
-        text = text .. " = " .. Addon.Escape(value)
-    elseif valueType == "number" then
-        text = text .. " = " .. value
-    elseif valueType == "nil" then
-        text = text .. " = " .. "nil"
-    else
-        text = text .. " = " .. "nil --[[" .. valueType .. "]]"
-    end
+function Addon.IsArray(target)
+    return type(target) == "table" and #target > 0
+end
 
-    if depth > 0 then
-        text = text .. ","
-    end
-
-    Addon.Log(text)
+function Addon.ToString(...)
+    local serializer = Addon.Utils.Serializer:new("")
+    serializer:Write(...)
+    return serializer:ToString()
 end
 
 ---
---- Creates a clone of the provided value up to a maximum depth (default: 1).
+--- Serializes the value into a Lua evaluable string.
 ---
---- @param value table
---- @return table
+--- @param ... any The value(s) to serialize.
+---
+function Addon.Serialize(...)
+    local serializer = Addon.Utils.Serializer:new()
+    serializer:Write(...)
+    return serializer:ToString()
+end
+
+---
+--- Dumps the specified value to the log.
+---
+--- @param ... any
+---
+function Addon.Dump(...)
+    Addon.Debug(Addon.Serialize(...))
+end
+
+---
+--- Creates a clone of the provided value up to a maximum depth.
+---
+--- @param value table The table to clone.
+--- @param maxDepth integer The maximum depth. (default: 1)
+--- @param depth integer The current depth. (default: 1)
+--- @return table table Cloned table.
 ---
 function Addon.Clone(value, maxDepth, depth)
     if type(value) ~= "table" then
@@ -202,28 +241,49 @@ end
 --- Chooses a random value from a table.
 ---
 --- @param values table[any]
---- @return any
+--- @param fallback any
+--- @return any|nil
 ---
-function Addon.Choose(values)
-    return values[random(#values)] or nil
+function Addon.Choose(values, fallback)
+    if type(values) == "table" then
+        local index = #values
+        if index > 0 then
+            return values[random(index)] or fallback and Addon.Choose(fallback) or nil
+        else
+            return fallback and Addon.Choose(fallback) or nil
+        end
+    else
+        return values or fallback and Addon.Choose(fallback) or nil
+    end
 end
 
-function Addon.Trim(input)
+---
+--- Removing extraneous characters from the beginning and end of a string.
+---
+--- @param input string String to trim.
+--- @param chars string|nil Characters to trim. (default: " \t\n")
+--- @return string string Trimmed version of the string.
+---
+function Addon.Trim(input, chars)
     input = tostring(input or "")
+    chars = tostring(chars or " \t\n")
 
-    input = strtrim(input, " \t\n")
-    return input
+    return strtrim(input, chars)
 end
 
-function Addon.Split(input, separator)
-    separator = tostring(separator or "\n")
-
-    input = tostring(input or "") -- ensure valid string
-    input = input:gsub(separator.."+", separator) -- remove empty lines in middle
-    input = Addon.Trim(input)
+---
+--- Splits the inputted string into an array.
+---
+--- @param input string String to split.
+--- @param chars string|nil The characters to split at. (default: ";\n")
+--- @return table array The values that were split.
+---
+function Addon.Split(input, chars)
+    input = tostring(input or "")
+    chars = tostring(chars or ";\n")
 
     local results = {}
-    for result in string.gmatch(input, "([^"..separator.."]+)") do
+    for result in string.gmatch(input, "([^" .. chars .. "]+)") do
         result = Addon.Trim(result)
         if result ~= "" then
             table.insert(results, result)
@@ -233,7 +293,39 @@ function Addon.Split(input, separator)
     return results
 end
 
+function Addon.Join(input, separator)
+    separator = tostring(separator or " ")
+    if type(input) == "table" then
+        return table.concat(input, separator)
+    else
+        return tostring(input or "")
+    end
+end
+
+---
+--- Splits the inputted string into two values
+---
+--- @param input string String to split.
+--- @param chars string|nil The characters to split at. (default: ";\n")
+--- @return string before The text before the separator.
+--- @return string|nil after The text after the separator or nil if separator not found.
+---
+function Addon.SplitOnce(input, chars)
+    input = tostring(input or "")
+    chars = tostring(chars or ";\n")
+
+    local start, stop = string.find(input, "[" .. chars .. "]+", 1)
+    if start then
+        local before = string.sub(input, 1, start - 1)
+        local after = string.sub(input, stop + 1)
+        return before, after
+    end
+
+    return input
+end
+
 function Addon.UpsertMacro(name, icon, body, perCharacter)
+    name = L[name] or name
     local index = GetMacroIndexByName(name)
 
     local id
@@ -244,48 +336,6 @@ function Addon.UpsertMacro(name, icon, body, perCharacter)
     end
 
     if id == nil then
-        Addon:Warningf(L["Could not update macro %s."], name)
+        Addon.Warning("Could not update macro %s.", name)
     end
-end
-
-local s_delayFrame = nil
-local s_delayQueue = {}
-
----
---- Executes a callback after the specified delay.
----
---- @param delay number The numbers of seconds to wait.
---- @param callback function The function to call when the delay has elapsed.
---- @param ... any The argument(s) for the callback.
----
---- @note Adapted from: https://wowwiki-archive.fandom.com/wiki/USERAPI_wait
----
-function Addon.Delay(delay, callback, ...)
-    Addon.Assert(type(delay) == "number", "delay must be a number")
-    Addon.Assert(type(callback) == "function", "callback must be a function")
-
-    if not s_delayFrame then
-        s_delayFrame = CreateFrame("Frame", "Chatbot.DelayFrame", UIParent)
-        s_delayFrame:SetScript("OnUpdate", function(_, elapsed_time)
-            local index = 1
-            local count = #s_delayQueue
-            while index <= count do
-                local entry = table.remove(s_delayQueue, index)
-                entry.lifespan = entry.lifespan - elapsed_time
-                if entry.lifespan > 0 then
-                    table.insert(s_delayQueue, index, entry)
-                    index = index + 1
-                else
-                    count = count - 1
-                    entry.callback(unpack(entry.arguments))
-                end
-            end
-        end)
-    end
-
-    table.insert(s_delayQueue, {
-        lifespan = delay,
-        callback = callback,
-        arguments = {...}
-    })
 end

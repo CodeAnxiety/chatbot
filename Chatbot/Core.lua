@@ -11,7 +11,7 @@ Addon.locale = GetLocale()
 _G[AddonName] = Addon
 
 function Addon:OnInitialize()
-    Addon.Tracef("Addon:OnInitialize")
+    Addon.Trace("Addon:OnInitialize")
 
     self:RegisterDB()
     self:SetupOptions()

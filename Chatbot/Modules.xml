@@ -2,4 +2,6 @@
 ..\FrameXML\UI.xsd">
     <Script file="Modules\Languages.lua" />
     <Script file="Modules\Random.lua" />
+    <Script file="Modules\Personality.lua" />
+    <Script file="Modules\Tools.lua" />
 </Ui>

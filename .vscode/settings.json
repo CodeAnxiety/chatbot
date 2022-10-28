@@ -14,6 +14,16 @@
         "DEFAULT_CHAT_FRAME",
         "LE_PARTY_CATEGORY_INSTANCE",
         "LE_PARTY_CATEGORY_HOME",
-        "SELECTED_CHAT_FRAME"
+        "SELECTED_CHAT_FRAME",
+        "ChatFrame1",
+        "_G",
     ],
+    "cSpell.ignorePaths": [
+        "Libs/*"
+    ],
+    "cSpell.ignoreWords": [
+        "strtrim",
+        "DLAPI"
+    ],
+    "cSpell.words": [],
 }
