@@ -111,19 +111,19 @@ function Module:Options()
 end
 
 function Module:OnInitialize()
-    Addon.Tracef("Module[%s]:OnInitialize", self.name)
+    Addon.TraceF("Module[%s]:OnInitialize", self.name)
 
     self.db = Addon.db:RegisterNamespace("Languages", k_defaults)
 end
 
 function Module:OnEnable()
-    Addon.Tracef("Module[%s]:OnEnable", self.name)
+    Addon.TraceF("Module[%s]:OnEnable", self.name)
 
     SetCurrentLanguageIndex(GetCurrentLanguageIndex(), true)
 end
 
 function Module:OnDisable()
-    Addon.Tracef("Module[%s]:OnDisable", self.name)
+    Addon.TraceF("Module[%s]:OnDisable", self.name)
 
     SetCurrentLanguageIndex(1, true)
 end
@@ -132,7 +132,7 @@ end
 --- Usage: /cycle_language
 ---
 function Module:CmdCycleLanguage(input)
-    Addon.Tracef("Module[%s]:CmdCycleLanguage(%s)", self.name, input)
+    Addon.TraceF("Module[%s]:CmdCycleLanguage(%s)", self.name, input)
 
     if input == "-?" or input == "-h" or input == "-help" then
         Addon:Print(L["Usage:"], L["Languages__cycle_language"])
@@ -146,7 +146,7 @@ end
 --- Usage: /set_language [name|index]
 ---
 function Module:CmdSetLanguage(input)
-    Addon.Tracef("Module[%s]:CmdSetLanguage(%s)", self.name, input)
+    Addon.TraceF("Module[%s]:CmdSetLanguage(%s)", self.name, input)
 
     if input == "" or input == "-?" or input == "-h" or input == "-help" then
         Addon:Print(L["Usage:"], L["Languages__set_language"])
@@ -176,7 +176,7 @@ end
 --- Usage: /reset_language
 ---
 function Module:CmdResetLanguage(input)
-    Addon.Tracef("Module[%s]:CmdResetLanguage(%s)", self.name, input)
+    Addon.TraceF("Module[%s]:CmdResetLanguage(%s)", self.name, input)
 
     if input == "-?" or input == "-h" or input == "-help" then
         Addon:Print(L["Usage:"], L["Languages__reset_language"])
@@ -185,4 +185,3 @@ function Module:CmdResetLanguage(input)
 
     SetCurrentLanguageIndex(1, string.starts(input, "!"))
 end
-

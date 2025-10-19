@@ -4,29 +4,29 @@ local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
 local AceConsole = LibStub("AceConsole-3.0")
 
 local function RegisterCommand(module, name, callbackName)
-    Addon.Tracef("RegisterCommand(%s, %s, %s)", module.name, name, callbackName)
+    Addon.TraceF("RegisterCommand(%s, %s, %s)", module.name, name, callbackName)
 
     if not AceConsole.commands[name] then
         module:RegisterChatCommand(name, callbackName)
-        Addon.Debugf("Command /%s is now registered to %s.", name, callbackName)
+        Addon.DebugF("Command /%s is now registered to %s.", name, callbackName)
     else
-        Addon.Tracef("Command /%s is was already registered to %s.", name, callbackName)
+        Addon.TraceF("Command /%s is was already registered to %s.", name, callbackName)
     end
 end
 
 local function UnregisterCommand(module, name, callbackName)
-    Addon.Tracef("UnregisterCommand(%s, %s, %s)", module.name, name, callbackName)
+    Addon.TraceF("UnregisterCommand(%s, %s, %s)", module.name, name, callbackName)
 
     if AceConsole.commands[name] then
         module:UnregisterChatCommand(name, callbackName)
-        Addon.Debugf("Command /%s is now unregistered from %s.", name, callbackName)
+        Addon.DebugF("Command /%s is now unregistered from %s.", name, callbackName)
     else
-        Addon.Tracef("Command /%s is was already unregistered from %s.", name, callbackName)
+        Addon.TraceF("Command /%s is was already unregistered from %s.", name, callbackName)
     end
 end
 
 local function ToggleCommand(module, name, callbackName, enabled)
-    Addon.Tracef("ToggleCommand(%s, %s, %s, %s)", module.name, name, callbackName, tostring(enabled or "nil"))
+    Addon.TraceF("ToggleCommand(%s, %s, %s, %s)", module.name, name, callbackName, tostring(enabled or "nil"))
 
     if enabled then
         RegisterCommand(module, name, callbackName)
@@ -44,7 +44,7 @@ local function GetAliasNames(name)
 end
 
 local function ToggleAlias(module, name, callbackName, enabled)
-    Addon.Tracef("ToggleAlias(%s, %s, %s, %s)", module.name, name, callbackName, tostring(enabled))
+    Addon.TraceF("ToggleAlias(%s, %s, %s, %s)", module.name, name, callbackName, tostring(enabled))
 
     local primaryName, altName = GetAliasNames(name)
 
@@ -76,7 +76,8 @@ end
 --- @param enabled boolean|nil Whether the commands should be registered or not.
 ---
 function Addon:SetupModuleCommands(name, module, enabled)
-    Addon.Tracef("Addon:SetupModuleCommands(%s, %s, %s)", name, module ~= nil and module.name or "nil", tostring(enabled or "nil"))
+    Addon.TraceF("Addon:SetupModuleCommands(%s, %s, %s)", name, module ~= nil and module.name or "nil",
+        tostring(enabled or "nil"))
     Addon.Assert(type(name) == "string", "name must be string")
     Addon.Assert(module == nil or type(module) == "table", "module must be a table or nil")
     Addon.Assert(enabled == nil or type(enabled) == "boolean", "enabled must be a boolean or nil")
@@ -103,4 +104,3 @@ function Addon:SetupModuleCommands(name, module, enabled)
         end
     end
 end
-

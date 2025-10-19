@@ -1,6 +1,6 @@
-## Interface: 90200
-## Version: 0.0.1
+## Interface: 10000, 11000, 12000
 ## Title: |cff00cc00Chat Bot|r 9000
+## Version: 0.0.2
 ## Author: Justin O'Dell <codeanxiety@gmail.com>
 ## Notes: Does your socializing for you!
 ## SavedVariables: ChatbotDB

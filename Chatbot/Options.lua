@@ -351,7 +351,7 @@ function Addon:SetupOptions()
 end
 
 function Addon:CmdShowOptions(input)
-    Addon.Tracef("Addon:ShowOptions(%s)", input)
+    Addon.TraceF("Addon:ShowOptions(%s)", input)
 
     if not AceConfigDialog.OpenFrames[AddonName] then
         AceConfigDialog:Open(AddonName)

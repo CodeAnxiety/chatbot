@@ -33,7 +33,7 @@ end
 --- @param enabled boolean|nil Whether the module should be enabled, or the module's configured enable state if nil.
 ---
 function Addon:ToggleModule(name, module, enabled)
-    Addon.Tracef("Addon:ToggleModule(%s, %s)", name, enabled ~= nil and tostring(enabled) or "nil")
+    Addon.TraceF("Addon:ToggleModule(%s, %s)", name, enabled ~= nil and tostring(enabled) or "nil")
     Addon.Assert(type(name) == "string", "name must be a string")
     Addon.Assert(module == nil or type(module) == "table", "module must be a table or nil")
     Addon.Assert(enabled == nil or type(enabled) == "boolean", "enabled must be a boolean or nil")
@@ -69,7 +69,7 @@ end
 --- @param module table|nil The module object.
 ---
 function Addon:EnableNamedModule(name, module)
-    Addon.Tracef("Addon:EnableNamedModule(%s)", name)
+    Addon.TraceF("Addon:EnableNamedModule(%s)", name)
     Addon.Assert(type(name) == "string", "name must be a string")
 
     if module == nil then
@@ -102,7 +102,7 @@ end
 --- @param module table|nil The module object.
 ---
 function Addon:DisableNamedModule(name, module)
-    Addon.Tracef("Addon:DisableNamedModule(%s)", name)
+    Addon.TraceF("Addon:DisableNamedModule(%s)", name)
     Addon.Assert(type(name) == "string", "name must be a string")
     Addon.Assert(module == nil or type(module) == "table", "module must be a table or nil")
 

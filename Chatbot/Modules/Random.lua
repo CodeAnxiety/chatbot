@@ -13,7 +13,7 @@ Module.aliases = {
     ["re"] = "random_emote",
 }
 
-local function GetChatTarget()
+local function GetChatType()
     if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
         return "INSTANCE_CHAT"
     elseif IsInRaid(LE_PARTY_CATEGORY_HOME) then
@@ -29,7 +29,7 @@ end
 --- Usage: /random_message message[; ...]
 ---
 function Module:CmdRandomMessage(input)
-    Addon.Tracef("Module[%s]:CmdRandomMessage(%s)", self.name, input)
+    Addon.TraceF("Module[%s]:CmdRandomMessage(%s)", self.name, input)
 
     if input == "" or input == "-?" or input == "-h" or input == "-help" then
         Addon:Print(L["Usage:"], L["Random__random_message"])
@@ -38,16 +38,16 @@ function Module:CmdRandomMessage(input)
 
     local messages = Addon.Split(input, ";")
     local message = Addon.Choose(messages)
-    local target = GetChatTarget()
+    local target = GetChatType()
 
-    SendChatMessage(message, target, DEFAULT_CHAT_FRAME.editBox.languageID)
+    C_ChatInfo.SendChatMessage(message, target, DEFAULT_CHAT_FRAME.editBox.languageID)
 end
 
 ---
 --- Usage: /random_emote emote[; ...]
 ---
 function Module:CmdRandomEmote(input)
-    Addon.Tracef("Module[%s]:CmdRandomEmote(%s)", self.name, input)
+    Addon.TraceF("Module[%s]:CmdRandomEmote(%s)", self.name, input)
 
     if input == "" or input == "-?" or input == "-h" or input == "-help" then
         Addon:Print(L["Usage:"], L["Random__random_emote"])

@@ -41,7 +41,7 @@ local function Log(level, message)
     end
 end
 
-local function Logf(level, message, ...)
+local function LogF(level, message, ...)
     if level >= s_logLevel then
         Log(level, format(message, ...));
     end
@@ -50,41 +50,52 @@ end
 function Addon.Trace(message)
     Log(k_logLevels.Trace, message)
 end
-function Addon.Tracef(message, ...)
-    Logf(k_logLevels.Trace, message, ...)
+
+function Addon.TraceF(message, ...)
+    LogF(k_logLevels.Trace, message, ...)
 end
+
 function Addon.Debug(message)
     Log(k_logLevels.Debug, message)
 end
-function Addon.Debugf(message, ...)
-    Logf(k_logLevels.Debug, message, ...)
+
+function Addon.DebugF(message, ...)
+    LogF(k_logLevels.Debug, message, ...)
 end
+
 function Addon.Log(message)
     Log(k_logLevels.Info, message)
 end
-function Addon.Logf(message, ...)
-    Logf(k_logLevels.Info, message, ...)
+
+function Addon.LogF(message, ...)
+    LogF(k_logLevels.Info, message, ...)
 end
+
 function Addon.Warning(message)
     Log(k_logLevels.Warning, message)
 end
-function Addon.Warningf(message, ...)
-    Logf(k_logLevels.Warning, message, ...)
+
+function Addon.WarningF(message, ...)
+    LogF(k_logLevels.Warning, message, ...)
 end
+
 function Addon.Error(message)
     Log(k_logLevels.Error, message)
 end
-function Addon.Errorf(message, ...)
-    Logf(k_logLevels.Error, message, ...)
+
+function Addon.ErrorF(message, ...)
+    LogF(k_logLevels.Error, message, ...)
 end
+
 function Addon.Assert(condition, message)
     if not condition then
         Log(k_logLevels.Assert, message)
     end
 end
-function Addon.Assertf(condition, message, ...)
+
+function Addon.AssertF(condition, message, ...)
     if not condition then
-        Logf(k_logLevels.Assert, message, ...)
+        LogF(k_logLevels.Assert, message, ...)
     end
 end
 
@@ -106,10 +117,10 @@ function Addon.SetLogLevel(level)
                 break
             end
         end
-        Addon.Assertf(found, "invalid log level: %s", level)
+        Addon.AssertF(found, "invalid log level: %s", level)
     end
 
-    Addon.Assertf(level >= 1 and level < k_logLevels.LAST, "invalid log level: %d", level)
+    Addon.AssertF(level >= 1 and level < k_logLevels.LAST, "invalid log level: %d", level)
 
     s_logLevel = level
     Log(level, "Log level updated.")
@@ -218,12 +229,12 @@ end
 function Addon.Split(input, separator)
     separator = tostring(separator or "\n")
 
-    input = tostring(input or "") -- ensure valid string
-    input = input:gsub(separator.."+", separator) -- remove empty lines in middle
+    input = tostring(input or "")                   -- ensure valid string
+    input = input:gsub(separator .. "+", separator) -- remove empty lines in middle
     input = Addon.Trim(input)
 
     local results = {}
-    for result in string.gmatch(input, "([^"..separator.."]+)") do
+    for result in string.gmatch(input, "([^" .. separator .. "]+)") do
         result = Addon.Trim(result)
         if result ~= "" then
             table.insert(results, result)
@@ -244,7 +255,7 @@ function Addon.UpsertMacro(name, icon, body, perCharacter)
     end
 
     if id == nil then
-        Addon:Warningf(L["Could not update macro %s."], name)
+        Addon:WarningF(L["Could not update macro %s."], name)
     end
 end
 
@@ -286,6 +297,6 @@ function Addon.Delay(delay, callback, ...)
     table.insert(s_delayQueue, {
         lifespan = delay,
         callback = callback,
-        arguments = {...}
+        arguments = { ... }
     })
 end
