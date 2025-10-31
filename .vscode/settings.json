@@ -1,16 +1,32 @@
 {
     "editor.wordWrapColumn": 100,
-    "editor.rulers": [100],
+    "editor.rulers": [
+        100
+    ],
     "wowAPI.emmyLua.loadFrameXML": true,
     "Lua.runtime.version": "Lua 5.1",
     "Lua.completion.showParams": true,
     "Lua.diagnostics.ignoredFiles": "Opened",
-    "Lua.workspace.ignoreDir": ["Libs/*"],
+    "Lua.workspace.ignoreDir": [
+        "${workspaceFolder}]\\Libs\\*"
+    ],
     "Lua.diagnostics.globals": [
+        "ACCEPT",
+        "CANCEL",
         "DEFAULT_CHAT_FRAME",
-        "LE_PARTY_CATEGORY_INSTANCE",
+        "FONT_COLOR_CODE_CLOSE",
+        "GameFontHighlight",
+        "GameFontHighlightLarge",
+        "GameFontHighlightSmall",
+        "GameFontNormal",
+        "hash_SlashCmdList",
         "LE_PARTY_CATEGORY_HOME",
-        "SELECTED_CHAT_FRAME"
+        "LE_PARTY_CATEGORY_INSTANCE",
+        "NORMAL_FONT_COLOR_CODE",
+        "NORMAL_FONT_COLOR",
+        "SELECTED_CHAT_FRAME",
+        "SlashCmdList",
+        "UIParent"
     ],
     "Lua.runtime.builtin": {
         "basic": "disable",
@@ -24,6 +40,24 @@
         "utf8": "disable"
     },
     "Lua.workspace.library": [
+        "${workspaceFolder}]\\Chatbot\\Libs",
         "~\\.vscode\\extensions\\ketho.wow-api-0.21.0\\Annotations\\Core"
+    ],
+    "spellright.ignoreRegExpsByClass": {
+        "lua": [
+            "/\\|c[A-Fa-f0-9]{6,8}/g"
+        ]
+    },
+    "cSpell.allowCompoundWords": true,
+    "cSpell.words": [
+        "draenei",
+        "Dwarven",
+        "Orcish",
+        "Taur-ahe",
+        "Thalassian",
+        "Zandali"
+    ],
+    "cSpell.ignoreRegExpList": [
+        "\\|c[A-Fa-f0-9]{6,8}"
     ]
 }

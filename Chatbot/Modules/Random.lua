@@ -32,15 +32,15 @@ function Module:CmdRandomMessage(input)
     Addon.TraceF("Module[%s]:CmdRandomMessage(%s)", self.name, input)
 
     if input == "" or input == "-?" or input == "-h" or input == "-help" then
-        Addon:Print(L["Usage:"], L["Random__random_message"])
+        Addon:Print(L["Usage:"], L["Random.random_message"])
         return
     end
 
     local messages = Addon.Split(input, ";")
     local message = Addon.Choose(messages)
-    local target = GetChatType()
+    local chatType = GetChatType()
 
-    C_ChatInfo.SendChatMessage(message, target, DEFAULT_CHAT_FRAME.editBox.languageID)
+    C_ChatInfo.SendChatMessage(message, chatType, DEFAULT_CHAT_FRAME.editBox.languageID)
 end
 
 ---
@@ -50,12 +50,12 @@ function Module:CmdRandomEmote(input)
     Addon.TraceF("Module[%s]:CmdRandomEmote(%s)", self.name, input)
 
     if input == "" or input == "-?" or input == "-h" or input == "-help" then
-        Addon:Print(L["Usage:"], L["Random__random_emote"])
+        Addon:Print(L["Usage:"], L["Random.random_emote"])
         return
     end
 
     local emotes = Addon.Split(input, ";")
     local emote = Addon.Choose(emotes)
 
-    DoEmote(emote, "none")
+    DoEmote(emote, "target")
 end

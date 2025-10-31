@@ -70,7 +70,7 @@ s_options = {
         commands = {
             type = "group",
             name = L["Commands"],
-            hidden = function ()
+            hidden = function()
                 return not AnyCommandsVisible(s_options.args.commands.args)
             end,
             args = {
@@ -88,8 +88,9 @@ s_options = {
                         Addon.db.global.allowAliases = value and true
                         Addon:SetupCommands()
                     end,
-                    get = function(_) return
-                        Addon.db.global.allowAliases and true
+                    get = function(_)
+                        return
+                            Addon.db.global.allowAliases and true
                     end
                 },
                 prefixAliases = {
@@ -101,15 +102,16 @@ s_options = {
                         Addon.db.global.prefixAliases = value and true
                         Addon:SetupCommands()
                     end,
-                    get = function(_) return
-                        Addon.db.global.prefixAliases and true
+                    get = function(_)
+                        return
+                            Addon.db.global.prefixAliases and true
                     end
                 },
                 headerCommands = {
                     type = "header",
                     name = L["Commands"],
                     order = k_commandOrderStart,
-                    hidden = function ()
+                    hidden = function()
                         return not AnyCommandsVisible(s_options.args.commands.args)
                     end
                 },
@@ -117,7 +119,7 @@ s_options = {
                     type = "description",
                     name = "\n",
                     order = k_commandOrderEnd,
-                    hidden = function ()
+                    hidden = function()
                         return not AnyCommandsVisible(s_options.args.commands.args)
                     end
                 },
@@ -125,7 +127,7 @@ s_options = {
                     type = "header",
                     name = L["Aliases"],
                     order = k_aliasOrderStart,
-                    hidden = function ()
+                    hidden = function()
                         return not AnyAliasesVisible(s_options.args.commands.args)
                     end
                 },
@@ -133,7 +135,7 @@ s_options = {
                     type = "description",
                     name = "\n",
                     order = k_aliasOrderEnd,
-                    hidden = function ()
+                    hidden = function()
                         return not AnyAliasesVisible(s_options.args.commands.args)
                     end
                 }
@@ -165,7 +167,7 @@ local function PopulateModulesOptions(order)
     local moduleOrder = 1
     for name, module in Addon:IterateModules() do
         -- add option to toggle the module
-        args[name.."Toggle"] = {
+        args[name .. "Toggle"] = {
             type = "toggle",
             name = module.name,
             order = toggleOrder,
@@ -252,8 +254,8 @@ local function PopulateCommands(order)
                 table.insert(commandNames, commandName)
                 commandArgs[commandName] = {
                     type = "description",
-                    name = L[moduleKey.."__"..commandName],
-                    hidden = function ()
+                    name = L[moduleKey .. "." .. commandName],
+                    hidden = function()
                         return not Addon:ShouldModuleBeEnabled(moduleKey)
                     end
                 }
@@ -264,11 +266,11 @@ local function PopulateCommands(order)
                 table.insert(aliasNames, alias)
                 aliasArgs[alias] = {
                     type = "description",
-                    name = function ()
+                    name = function()
                         local prefix = Addon.db.global.prefixAliases and Addon.AliasPrefix or ""
-                        return format(L["/%s%s -> "], prefix, alias)..L[moduleKey.."__"..commandName]
+                        return format(L["/%s%s -> "], prefix, alias) .. L[moduleKey .. "." .. commandName]
                     end,
-                    hidden = function ()
+                    hidden = function()
                         return not (Addon.db.global.allowAliases and Addon:ShouldModuleBeEnabled(moduleKey))
                     end,
                 }
